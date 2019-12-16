@@ -87,20 +87,31 @@ public class SftpFileProvider extends AbstractOriginatingFileProvider
         // Create the file system
         final GenericFileName rootName = (GenericFileName) name;
 
-        Session session;
+        Session session = null;
         UserAuthenticationData authData = null;
         try
         {
             authData = UserAuthenticatorUtils.authenticate(fileSystemOptions, AUTHENTICATOR_TYPES);
 
-            session = SftpClientFactory.createConnection(
-                rootName.getHostName(),
-                rootName.getPort(),
-                UserAuthenticatorUtils.getData(authData, UserAuthenticationData.USERNAME,
-                    UserAuthenticatorUtils.toChar(rootName.getUserName())),
-                UserAuthenticatorUtils.getData(authData, UserAuthenticationData.PASSWORD,
-                    UserAuthenticatorUtils.toChar(rootName.getPassword())),
-                fileSystemOptions);
+            // Retry 3 times to connect to workaround MIO-12758
+            for (int i = 1; i <= 3; i++) {
+                try {
+                    session = SftpClientFactory.createConnection(
+                        rootName.getHostName(),
+                        rootName.getPort(),
+                        UserAuthenticatorUtils.getData(authData, UserAuthenticationData.USERNAME,
+                            UserAuthenticatorUtils.toChar(rootName.getUserName())),
+                        UserAuthenticatorUtils.getData(authData, UserAuthenticationData.PASSWORD,
+                            UserAuthenticatorUtils.toChar(rootName.getPassword())),
+                        fileSystemOptions);
+                    break;
+                }
+                catch (Exception e) {
+                    if (i == 3) {
+                        throw e;
+                    }
+                }
+            }
         }
         catch (final Exception e)
         {

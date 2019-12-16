@@ -58,7 +58,7 @@ public class LocalFile extends AbstractFileObject implements FileObject
     /**
      * Returns the local file that this file object represents.
      */
-    protected File getLocalFile()
+    public File getLocalFile()
     {
         return file;
     }

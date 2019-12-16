@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Vector;
 
+import org.apache.commons.vfs2.FileNotFolderException;
 import org.apache.commons.vfs2.FileNotFoundException;
 import org.apache.commons.vfs2.FileObject;
 import org.apache.commons.vfs2.FileSystemException;
@@ -585,6 +586,40 @@ public class SftpFileObject extends AbstractFileObject implements FileObject
         protected void onClose() throws IOException
         {
             fileSystem.putChannel(channel);
+        }
+    }
+
+
+    /**
+     * Returns the file's list of children.
+     *
+     * @return The list of children
+     * @throws FileSystemException
+     *             If there was a problem listing children
+     * @see AbstractFileObject#getChildren()
+     * @since 2.0
+     */
+    @Override
+    public FileObject[] getChildren() throws FileSystemException {
+
+        try {
+            if (doGetType() != FileType.FOLDER) {
+                throw new FileNotFolderException(getName());
+            }
+        }
+        catch (FileNotFolderException fnfe) {
+            throw fnfe;
+        }
+        catch (Exception ex) {
+            throw new FileNotFolderException(getName(), ex);
+        }
+
+        try {
+            this.inRefresh = true;
+            return super.getChildren();
+        }
+        finally {
+            this.inRefresh = false;
         }
     }
 

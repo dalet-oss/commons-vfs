@@ -19,6 +19,7 @@ package org.apache.commons.vfs2;
 import java.net.URL;
 import java.util.List;
 
+import org.apache.commons.net.io.CopyStreamListener;
 import org.apache.commons.vfs2.operations.FileOperations;
 
 /**
@@ -252,6 +253,24 @@ public interface FileObject
      *                             its ancestors.
      */
     void createFile() throws FileSystemException;
+
+    /**
+     * Copies another file, and all its descendents, to this file.
+     * <p/>
+     * If this file does not exist, it is created.  Its parent folder is also
+     * created, if necessary.  If this file does exist, it is deleted first.
+     * <p/>
+     * <p>This method is not transactional.  If it fails and throws an
+     * exception, this file will potentially only be partially copied.
+     *
+     * @param srcFile            The source file to copy.
+     * @param selector           The selector to use to select which files to copy.
+     * @param copyStreamListener The listener that will be notified when bytes are written to output stream
+     * @throws FileSystemException If this file is read-only, or if the source file does not exist,
+     *                             or on error copying the file.
+     */
+    void copyFrom(FileObject srcFile, FileSelector selector, CopyStreamListener copyStreamListener)
+            throws FileSystemException;
 
     /**
      * Copies another file, and all its descendents, to this file.

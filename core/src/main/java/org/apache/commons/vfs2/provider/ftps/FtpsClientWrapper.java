@@ -267,4 +267,8 @@ class FtpsClientWrapper implements FtpClient
     {
         return getFtpsClient().getReplyString();
     }
+
+    public FTPFile getFileOrDirectory(String fileOrDirectoryPath) throws IOException {
+        throw new IOException("This method is not supported for FtpsClient");
+    }
 }

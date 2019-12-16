@@ -19,6 +19,7 @@ package org.apache.commons.vfs2.impl;
 import java.net.URL;
 import java.util.List;
 
+import org.apache.commons.net.io.CopyStreamListener;
 import org.apache.commons.vfs2.FileContent;
 import org.apache.commons.vfs2.FileName;
 import org.apache.commons.vfs2.FileObject;
@@ -52,6 +53,13 @@ public class DecoratedFileObject implements FileObject
     public void close() throws FileSystemException
     {
         decoratedFileObject.close();
+    }
+
+
+    public void copyFrom(FileObject srcFile, FileSelector selector, CopyStreamListener copyStreamListener)
+            throws FileSystemException {
+
+        decoratedFileObject.copyFrom(srcFile, selector, copyStreamListener);
     }
 
     public void copyFrom(FileObject srcFile, FileSelector selector) throws FileSystemException

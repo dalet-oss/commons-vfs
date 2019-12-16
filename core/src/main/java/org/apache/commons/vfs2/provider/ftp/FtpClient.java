@@ -56,4 +56,8 @@ public interface FtpClient
     boolean abort() throws IOException;
 
     String getReplyString() throws IOException;
+
+    // If the specified path exists as a file or a directory return it, if not
+    // return null - this means the path doesn't exist
+    public FTPFile getFileOrDirectory(String fileOrDirectoryPath) throws IOException;
 }

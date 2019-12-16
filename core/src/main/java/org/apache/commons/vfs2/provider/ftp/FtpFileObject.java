@@ -101,23 +101,30 @@ public class FtpFileObject extends AbstractFileObject
                  * refreshed our children. No need to do it again when our children are
                  * refresh()ed, calling getChildFile() for themselves from within
                  * getInfo(). See getChildren(). */
-        if (flush && !inRefresh)
-        {
-            children = null;
+        if ((flush && !inRefresh) || (children == null)) {
+            return getFileOrDirectory(name);
         }
 
-        // List the children of this file
-        doGetChildren();
+        return children.get(name);
+    }
 
-        // VFS-210
-        if (children == null)
-        {
-            return null;
+    private FTPFile getFileOrDirectory(String name) throws IOException {
+        final FtpClient client = ftpFs.getClient();
+        try {
+            final String path = fileInfo != null && fileInfo.isSymbolicLink()
+                ? getFileSystem().getFileSystemManager().
+                    resolveName(getParent().getName(), fileInfo.getLink()).getPath()
+                : relPath;
+            String filePath = name;
+            if (path != null) {
+                filePath = path + "/" + name;
+            }
+
+            return client.getFileOrDirectory(filePath);
         }
-
-        // Look for the requested child
-        FTPFile ftpFile = children.get(name);
-        return ftpFile;
+        finally {
+            ftpFs.putClient(client);
+        }
     }
 
     /**

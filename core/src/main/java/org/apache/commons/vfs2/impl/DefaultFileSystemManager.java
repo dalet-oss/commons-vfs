@@ -26,6 +26,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -81,7 +82,7 @@ public class DefaultFileSystemManager implements FileSystemManager
     /**
      * Mapping from URI scheme to FileProvider.
      */
-    private final Map<String, FileProvider> providers = new HashMap<String, FileProvider>();
+    private final Map<String, FileProvider> providers = new ConcurrentHashMap<String, FileProvider>();
 
     /**
      * All components used by this manager.
@@ -1127,13 +1128,13 @@ public class DefaultFileSystemManager implements FileSystemManager
 
             if (!operationProviders.containsKey(scheme))
             {
-                final List<FileOperationProvider> providers = new ArrayList<FileOperationProvider>();
-                operationProviders.put(scheme, providers);
+                final List<FileOperationProvider> providerList = new ArrayList<FileOperationProvider>();
+                operationProviders.put(scheme, providerList);
             }
 
-            final List<FileOperationProvider> providers = operationProviders.get(scheme);
+            final List<FileOperationProvider> providerList = operationProviders.get(scheme);
 
-            if (providers.contains(operationProvider))
+            if (providerList.contains(operationProvider))
             {
                 throw new FileSystemException(
                         "vfs.operation/operation-provider-already-added.error", scheme);
@@ -1141,7 +1142,7 @@ public class DefaultFileSystemManager implements FileSystemManager
 
             setupComponent(operationProvider);
 
-            providers.add(operationProvider);
+            providerList.add(operationProvider);
         }
     }
 

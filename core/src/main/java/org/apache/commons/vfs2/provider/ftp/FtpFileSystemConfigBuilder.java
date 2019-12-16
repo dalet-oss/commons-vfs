@@ -35,6 +35,10 @@ public final class FtpFileSystemConfigBuilder extends FileSystemConfigBuilder
     private static final String USER_DIR_IS_ROOT = FtpFileSystemConfigBuilder.class.getName() + ".USER_DIR_IS_ROOT";
     private static final String DATA_TIMEOUT = FtpFileSystemConfigBuilder.class.getName() + ".DATA_TIMEOUT";
     private static final String SO_TIMEOUT = FtpFileSystemConfigBuilder.class.getName() + ".SO_TIMEOUT";
+    private static final String SO_INPUT_BUFFER_SIZE = FtpFileSystemConfigBuilder.class.getName() + ".SO_INPUT_BUFFER_SIZE";
+    private static final String SO_OUTPUT_BUFFER_SIZE = FtpFileSystemConfigBuilder.class.getName() + ".SO_OUTPUT_BUFFER_SIZE";
+    private static final String STREAM_BUFFER_SIZE = FtpFileSystemConfigBuilder.class.getName() + ".STREAM_BUFFER_SIZE";
+
 
     private static final String SERVER_LANGUAGE_CODE =
             FtpFileSystemConfigBuilder.class.getName() + ".SERVER_LANGUAGE_CODE";
@@ -109,6 +113,69 @@ public final class FtpFileSystemConfigBuilder extends FileSystemConfigBuilder
     protected Class<? extends FileSystem> getConfigClass()
     {
         return FtpFileSystem.class;
+    }
+
+    /**
+     * set client socket receive buffer size.
+     *
+     * @param opts The FileSystemOptions.
+     * @param size the desired socket receive buffer size
+     */
+    public void setSocketReceiveBufferSize(FileSystemOptions opts, Integer size)
+    {
+        setParam(opts, SO_INPUT_BUFFER_SIZE, size);
+    }
+
+    /**
+     * @param opts The FileSystemOptions.
+     * @return the socket receive buffer size
+     * @see #setSocketReceiveBufferSize(FileSystemOptions, Integer)
+     */
+    public Integer getSocketReceiveBufferSize(FileSystemOptions opts)
+    {
+        return getInteger(opts, SO_INPUT_BUFFER_SIZE);
+    }
+
+    /**
+     * set client socket send buffer size.
+     *
+     * @param opts The FileSystemOptions.
+     * @param size the desired socket send buffer size
+     */
+    public void setSocketSendBufferSize(FileSystemOptions opts, Integer size)
+    {
+        setParam(opts, SO_OUTPUT_BUFFER_SIZE, size);
+    }
+
+    /**
+     * @param opts The FileSystemOptions.
+     * @return the socket send buffer size
+     * @see #setSocketSendBufferSize(FileSystemOptions, Integer)
+     */
+    public Integer getSocketSendBufferSize(FileSystemOptions opts)
+    {
+        return getInteger(opts, SO_OUTPUT_BUFFER_SIZE);
+    }
+
+    /**
+     * set client stream buffer size.
+     *
+     * @param opts The FileSystemOptions.
+     * @param size the desired stream buffer size
+     */
+    public void setStreamBufferSize(FileSystemOptions opts, Integer size)
+    {
+        setParam(opts, STREAM_BUFFER_SIZE, size);
+    }
+
+    /**
+     * @param opts The FileSystemOptions.
+     * @return the stream buffer size
+     * @see #setStreamBufferSize(FileSystemOptions, Integer)
+     */
+    public Integer getStreamBufferSize(FileSystemOptions opts)
+    {
+        return getInteger(opts, STREAM_BUFFER_SIZE);
     }
 
     /**

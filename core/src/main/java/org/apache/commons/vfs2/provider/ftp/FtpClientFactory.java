@@ -118,6 +118,24 @@ public final class FtpClientFactory
                     client.setSoTimeout(socketTimeout.intValue());
                 }
 
+                Integer streamBufferSize = FtpFileSystemConfigBuilder.getInstance().getStreamBufferSize(fileSystemOptions);
+                if (streamBufferSize != null)
+                {
+                    client.setBufferSize(streamBufferSize.intValue());
+                }
+
+                Integer socketSendBufferSize = FtpFileSystemConfigBuilder.getInstance().getSocketSendBufferSize(fileSystemOptions);
+                if (socketSendBufferSize != null)
+                {
+                    client.setSendBufferSize(socketSendBufferSize.intValue());
+                }
+
+                Integer socketReceiveBufferSize = FtpFileSystemConfigBuilder.getInstance().getSocketReceiveBufferSize(fileSystemOptions);
+                if (socketReceiveBufferSize != null)
+                {
+                    client.setReceiveBufferSize(socketReceiveBufferSize.intValue());
+                }
+
                 // Change to root by default
                 // All file operations a relative to the filesystem-root
                 // String root = getRoot().getName().getPath();

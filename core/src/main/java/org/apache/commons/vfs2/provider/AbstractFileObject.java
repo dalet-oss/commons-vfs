@@ -33,6 +33,10 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.apache.commons.net.io.CopyStreamListener;
+import org.apache.commons.net.io.Util;
 import org.apache.commons.vfs2.Capability;
 import org.apache.commons.vfs2.FileContent;
 import org.apache.commons.vfs2.FileContentInfoFactory;
@@ -43,7 +47,6 @@ import org.apache.commons.vfs2.FileSelector;
 import org.apache.commons.vfs2.FileSystem;
 import org.apache.commons.vfs2.FileSystemException;
 import org.apache.commons.vfs2.FileType;
-import org.apache.commons.vfs2.FileUtil;
 import org.apache.commons.vfs2.NameScope;
 import org.apache.commons.vfs2.RandomAccessContent;
 import org.apache.commons.vfs2.Selectors;
@@ -67,6 +70,8 @@ public abstract class AbstractFileObject implements FileObject
     private static final FileName[] EMPTY_FILE_ARRAY = {};
 
     private static final int INITIAL_LISTSZ = 5;
+
+    private Log log = LogFactory.getLog(getClass());
 
     private final AbstractFileName name;
     private final AbstractFileSystem fs;
@@ -1002,12 +1007,9 @@ public abstract class AbstractFileObject implements FileObject
     }
 
     /**
-     * Copies another file to this file.
-     * @param file The FileObject to copy.
-     * @param selector The FileSelector.
-     * @throws FileSystemException if an error occurs.
+     * {@inheritDoc}
      */
-    public void copyFrom(final FileObject file, final FileSelector selector)
+    public void copyFrom(final FileObject file, final FileSelector selector, CopyStreamListener copyStreamListener)
         throws FileSystemException
     {
         if (!file.exists())
@@ -1050,7 +1052,21 @@ public abstract class AbstractFileObject implements FileObject
             {
                 if (srcFile.getType().hasContent())
                 {
-                    FileUtil.copyContent(srcFile, destFile);
+                    // We need a copy stream listener to show copy progress, hence Util as FileUtil doesn't support listeners.
+                    //FileUtil.copyContent(srcFile, destFile);
+                    try {
+                        OutputStream destinationFileOut = destFile.getContent().getOutputStream();
+                        try {
+                            Util.copyStream(srcFile.getContent().getInputStream(), destinationFileOut,
+                                    Util.DEFAULT_COPY_BUFFER_SIZE, srcFile.getContent().getSize(), copyStreamListener);
+                        }
+                        finally {
+                            destinationFileOut.close();
+                        }
+                    }
+                    finally {
+                        srcFile.close();
+                    }
                 }
                 else if (srcFile.getType().hasChildren())
                 {
@@ -1063,6 +1079,21 @@ public abstract class AbstractFileObject implements FileObject
             }
         }
     }
+
+
+    /**
+     * Copies another file to this file.
+     *
+     * @param file     The FileObject to copy.
+     * @param selector The FileSelector.
+     * @throws FileSystemException if an error occurs.
+     */
+    public void copyFrom(final FileObject file, final FileSelector selector)
+            throws FileSystemException {
+
+        copyFrom(file, selector, null);
+    }
+
 
     /**
      * Moves (rename) the file to another one.
@@ -1125,6 +1156,23 @@ public abstract class AbstractFileObject implements FileObject
             // different fs - do the copy/delete stuff
 
             destFile.copyFrom(this, Selectors.SELECT_SELF);
+
+            // get file size
+            long srcFileSize = this.getContent().getSize();
+            long destFileSize = destFile.getContent().getSize();
+
+            // Validation is added on the file size like if the file size of source and destination location is not match then
+            // throw the exception and delete the destination location file.
+
+            if (srcFileSize != destFileSize) {
+
+                destFile.delete();
+
+                throw new FileSystemException(
+                        "After moving file, destination location file size " + destFileSize
+                                + " is not match with the source location"
+                                + " file size " + srcFileSize);
+            }
 
             if (((destFile.getType().hasContent()
                     && destFile.getFileSystem().hasCapability(Capability.SET_LAST_MODIFIED_FILE))
